@@ -1,15 +1,19 @@
 package coen.cloud.computing.newsfeed.model.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
+import javax.persistence.*;
 
 @Setter @Getter
 @ToString
-@AllArgsConstructor
+@AllArgsConstructor @NoArgsConstructor
+@Entity
+@Table(name = "Topics")
 public class Topic {
 
-  int id;
-  String topicName;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private int id;
+  @Column(name = "Name")
+  private  String topicName;
 }

@@ -16,9 +16,7 @@ public class ArticleController {
   private ArticleListAggregator aggregator;
 
   @GetMapping("/articles")
-  public ResponseEntity<List<Article>> getAllArticles() {
-    List<Article> allArticles = aggregator.getAllArticles();
-    System.out.println("Articles fetched: " + allArticles.size());
-    return ResponseEntity.ok(allArticles);
+  public void getAllArticles() {
+    aggregator.upsertArticlesInDatabase();
   }
 }

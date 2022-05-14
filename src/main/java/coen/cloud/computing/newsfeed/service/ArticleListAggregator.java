@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface ArticleListAggregator {
 
-  public List<Article> getAllArticles();
+    public void upsertArticlesInDatabase();
 }

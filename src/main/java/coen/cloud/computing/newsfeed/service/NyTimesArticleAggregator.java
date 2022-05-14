@@ -3,44 +3,73 @@ package coen.cloud.computing.newsfeed.service;
 import coen.cloud.computing.newsfeed.client.NyTimesApiClient;
 import coen.cloud.computing.newsfeed.model.common.Article;
 import coen.cloud.computing.newsfeed.model.common.Topic;
+import coen.cloud.computing.newsfeed.model.common.TopicArticleMapping;
+import coen.cloud.computing.newsfeed.repository.ArticleRepository;
+import coen.cloud.computing.newsfeed.repository.TopicArticleMappingRepository;
+import coen.cloud.computing.newsfeed.repository.TopicRepository;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
-import static java.util.Comparator.comparing;
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toCollection;
-
-@Component
+@Service
 public class NyTimesArticleAggregator implements ArticleListAggregator {
 
   @Autowired
   private NyTimesApiClient nyTimesClient;
 
+  @Autowired
+  private TopicRepository topicRepository;
+
+  @Autowired
+  private ArticleRepository articleRepository;
+
+  @Autowired
+  private TopicArticleMappingRepository topicArticleMappingRepository;
+
   @Override
-  public List<Article> getAllArticles() {
+  public void upsertArticlesInDatabase() {
+
     List<Topic> topics = getAllTopics();
 
     List<Article> result = new ArrayList<>();
-    for (Topic topic : topics)
-      result.addAll(nyTimesClient.getArticlesForTopic(topic.getTopicName()));
-    return result.stream().sorted((a1, a2) -> a2.getPublishDate().compareTo(a1.getPublishDate()))
-            .collect(collectingAndThen(toCollection(() -> new TreeSet<>(comparing(Article::getArticleSourceId))),
-                    ArrayList::new));
+    for (Topic topic : topics) {
+      List<Article> allArticles = nyTimesClient.getArticlesForTopic(topic.getTopicName());
 
+      List<Article> existingArticles = articleRepository.findByGeneratedIdIn(allArticles.stream().map(Article::getGeneratedId).collect(Collectors.toList()));
+      List<String> existingArticleGeneratedIds = existingArticles.stream().map(Article::getGeneratedId).collect(Collectors.toList());
+
+      List<Article> freshArticles = allArticles.stream().filter(a -> !existingArticleGeneratedIds.contains(a.getGeneratedId())).collect(Collectors.toList());
+
+      System.out.println("Persisting fresh articles");
+      articleRepository.saveAll(freshArticles);
+      topicArticleMappingRepository.saveAll(freshArticles.stream()
+              .map(article -> new TopicArticleMapping(topic.getId(), article.getId())).collect(Collectors.toList()));
+      System.out.println(freshArticles.size() + " articles added to topic "+topic.getTopicName());
+
+      System.out.println("Updating existing article associations");
+      existingArticles.forEach(article -> {
+        try {
+          topicArticleMappingRepository.save(new TopicArticleMapping(topic.getId(), article.getId()));
+        }
+        catch (ConstraintViolationException constraintViolationException){
+          System.out.println("Association already exists: "+ constraintViolationException.getMessage());
+        }
+        catch (Exception exception){
+          System.out.println("Exception in adding association: "+ exception.getMessage());
+        }
+      });
+
+    }
   }
 
+
   public List<Topic> getAllTopics() {
-    List<Topic> topics = new ArrayList<>();
-    topics.add(new Topic(1, "Technology"));
-    topics.add(new Topic(2, "Science"));
-    topics.add(new Topic(3, "Politics"));
-    topics.add(new Topic(4, "Sports"));
-    topics.add(new Topic(5, "Arts"));
-    topics.add(new Topic(6, "Movies"));
+    List<Topic> topics = topicRepository.findAll();
+    System.out.println("All topics: " + topics);
     return topics;
   }
 }
