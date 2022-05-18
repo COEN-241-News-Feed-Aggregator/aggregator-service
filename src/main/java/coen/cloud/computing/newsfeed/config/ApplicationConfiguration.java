@@ -18,6 +18,8 @@ public class ApplicationConfiguration {
 
   private NyTimesConfig nyTimes;
 
+  private NewsApiConfig newsApi;
+
   @Bean
   public RestTemplate restTemplate(RestTemplateBuilder builder) {
     return builder.build();

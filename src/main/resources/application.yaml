@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:oracle:thin:@db202204291622_high\?TNS_ADMIN=/Users/janangandhi/Documents/Projects/CC/Wallet_DB202204291622
+    url: jdbc:oracle:thin:@db202204291622_high?TNS_ADMIN=/Users/janangandhi/Documents/Projects/CC/Wallet_DB202204291622
     username: admin
     password: db-password
     driver-class-name: oracle.jdbc.OracleDriver
@@ -16,3 +16,10 @@ nyTimes:
   queryParameters:
     sort: newest
     api-key: apiKey
+
+newsApi:
+  baseUrl: https://newsapi.org/v2/everything
+  queryParameters:
+    apiKey: apiKey
+    sortBy: publishedAt
+    language: en

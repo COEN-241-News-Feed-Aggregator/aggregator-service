@@ -1,5 +1,6 @@
 package coen.cloud.computing.newsfeed.service;
 
+import coen.cloud.computing.newsfeed.client.NewsApClient;
 import coen.cloud.computing.newsfeed.client.NyTimesApiClient;
 import coen.cloud.computing.newsfeed.model.common.Article;
 import coen.cloud.computing.newsfeed.model.common.Topic;
@@ -22,6 +23,9 @@ public class NyTimesArticleAggregator implements ArticleListAggregator {
   private NyTimesApiClient nyTimesClient;
 
   @Autowired
+  private NewsApClient newsApiClient;
+
+  @Autowired
   private TopicRepository topicRepository;
 
   @Autowired
@@ -35,9 +39,11 @@ public class NyTimesArticleAggregator implements ArticleListAggregator {
 
     List<Topic> topics = getAllTopics();
 
-    List<Article> result = new ArrayList<>();
+    List<Article> allArticles = new ArrayList<>();
     for (Topic topic : topics) {
-      List<Article> allArticles = nyTimesClient.getArticlesForTopic(topic.getTopicName());
+      allArticles.addAll(nyTimesClient.getArticlesForTopic(topic.getTopicName()));
+
+      allArticles.addAll(newsApiClient.getArticlesForTopic(topic.getTopicName()));
 
       List<Article> existingArticles = articleRepository.findByGeneratedIdIn(allArticles.stream().map(Article::getGeneratedId).collect(Collectors.toList()));
       List<String> existingArticleGeneratedIds = existingArticles.stream().map(Article::getGeneratedId).collect(Collectors.toList());

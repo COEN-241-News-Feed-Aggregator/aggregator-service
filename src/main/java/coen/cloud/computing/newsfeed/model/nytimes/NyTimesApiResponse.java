@@ -8,8 +8,8 @@ import lombok.ToString;
 @ToString
 public class NyTimesApiResponse {
 
-  Fault fault;
-  String status;
-  Response response;
+  private Fault fault;
+  private String status;
+  private Response response;
 
 }
