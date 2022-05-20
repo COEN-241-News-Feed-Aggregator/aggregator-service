@@ -57,7 +57,7 @@ public class ArticleMapper {
       System.out.println("Unable to parse document date. Setting Date as default");
       mappedArticle.setPublishDate(new Date());
     }
-    mappedArticle.setAuthor(newsApiArticle.getAuthor() == null || newsApiArticle.getAuthor().isBlank()?
+    mappedArticle.setAuthor(newsApiArticle.getAuthor() == null || newsApiArticle.getAuthor().trim().isEmpty()?
             Constants.DEFAULT_AUTHOR : newsApiArticle.getAuthor());
     StringBuilder sb = new StringBuilder(mappedArticle.getTitle())
             .append("#").append(mappedArticle.getAuthor())
