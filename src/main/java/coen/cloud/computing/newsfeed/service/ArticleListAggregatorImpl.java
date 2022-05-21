@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class NyTimesArticleAggregator implements ArticleListAggregator {
+public class ArticleListAggregatorImpl implements ArticleListAggregator {
 
   @Autowired
   private NyTimesApiClient nyTimesClient;
