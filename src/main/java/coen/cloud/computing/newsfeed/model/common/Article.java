@@ -29,4 +29,7 @@ public class Article {
   private String generatedId;
   @Column(name = "created_at")
   private Date createdAt;
+  @Column(name = "image_url")
+  private String imageUrl;
+
 }

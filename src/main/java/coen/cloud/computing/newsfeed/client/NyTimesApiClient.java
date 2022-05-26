@@ -26,6 +26,7 @@ public class NyTimesApiClient {
 
 
   public List<Article> getArticlesForTopic(String topicName) {
+    restTemplate.setErrorHandler(new RestApiErrorHandler());
     System.out.println("Fetching all articles from NY Times for topicName " + topicName);
     List<Article> result = new ArrayList<>();
     String uri = buildUrl(topicName).toString();

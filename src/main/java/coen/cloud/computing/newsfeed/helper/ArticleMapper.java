@@ -3,6 +3,7 @@ package coen.cloud.computing.newsfeed.helper;
 import coen.cloud.computing.newsfeed.model.common.Article;
 import coen.cloud.computing.newsfeed.model.newsapi.NewsApiArticle;
 import coen.cloud.computing.newsfeed.model.nytimes.DocArticle;
+import coen.cloud.computing.newsfeed.model.nytimes.Multimedia;
 
 import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Optional;
 import java.util.TimeZone;
 
 public class ArticleMapper {
@@ -33,6 +35,16 @@ public class ArticleMapper {
       }
       mappedArticle.setAuthor(docArticle.getByline().getOriginal() == null?
               Constants.DEFAULT_AUTHOR : docArticle.getByline().getOriginal().substring(docArticle.getByline().getOriginal().indexOf(" ") + 1));
+      Optional<String> imageUrl = docArticle.getMultimedia().stream().filter(multimedia -> multimedia.getType().equalsIgnoreCase("image")
+              && multimedia.getSubType().equalsIgnoreCase("xlarge")).findFirst().map(Multimedia::getUrl);
+      if(imageUrl.isPresent()){
+        StringBuilder sb = new StringBuilder("https://static01.nyt.com/");
+        sb.append(imageUrl.get());
+        mappedArticle.setImageUrl(sb.toString());
+      } else
+      {
+        mappedArticle.setImageUrl(Constants.DEFAULT_IMAGE_URL);
+      }
       StringBuilder sb = new StringBuilder(mappedArticle.getTitle())
               .append("#").append(mappedArticle.getAuthor())
               .append("#").append(mappedArticle.getPublishDate().toString());
@@ -57,6 +69,8 @@ public class ArticleMapper {
       System.out.println("Unable to parse document date. Setting Date as default");
       mappedArticle.setPublishDate(new Date());
     }
+    mappedArticle.setImageUrl(newsApiArticle.getImageUrl() == null || newsApiArticle.
+            getImageUrl().trim().isEmpty()?Constants.DEFAULT_IMAGE_URL: newsApiArticle.getImageUrl());
     mappedArticle.setAuthor(newsApiArticle.getAuthor() == null || newsApiArticle.getAuthor().trim().isEmpty()?
             Constants.DEFAULT_AUTHOR : newsApiArticle.getAuthor());
     StringBuilder sb = new StringBuilder(mappedArticle.getTitle())

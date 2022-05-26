@@ -14,4 +14,6 @@ public class NewsApiArticle {
   @JsonProperty("url")
   private String webUrl;
   private String publishedAt;
+  @JsonProperty("urlToImage")
+  private String imageUrl;
 }
